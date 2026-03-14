@@ -783,7 +783,7 @@ tags: 歌单标签
 **必选参数 :** `uid` : 用户 id
 
 **可选参数 :**
-`limit` : 返回数量 , 默认为 30
+`limit` : 返回数量 , 默认为 20
 
 `offset` : 偏移数量，用于分页 ,如 :( 页数 -1)\*30, 其中 30 为 limit 的值 , 默认为 0
 
@@ -4118,13 +4118,15 @@ type='1009' 获取其 id, 如`/search?keywords= 代码时间 &type=1009`
 
 **接口地址:** `/voicelist/search`
 
+**必选参数：**
+
+`keyword`: 搜索关键词
+
 **可选参数：**
 
-`limit`: 取出歌单数量 , 默认为 200
+`limit`: 取出歌单数量, 默认为 10
 
-`offset`: 偏移数量 , 用于分页 , 如 :( 评论页数 -1)\*200, 其中 200 为 limit 的值
-
-`podcastName`: 播客名称
+`offset`: 偏移数量 , 用于分页 , 默认为 30
 
 ### 播客声音列表
 
@@ -5064,6 +5066,82 @@ let data = encodeURIComponent(
 **接口地址 :** `/user/playlist/collect`
 
 **调用例子 :** `/user/playlist/collect?uid=32953014`
+
+### 搜索建议 - PC端
+
+说明 : 调用此接口, 传入搜索关键词, 获取搜索建议
+
+**必选参数 :**
+
+`keyword`: 搜索关键词
+
+**接口地址 :** `/search/suggest/pc`
+
+**调用例子 :** `/search/suggest/pc?keyword=海阔天空`
+
+### 喜欢歌曲 - 新版
+
+说明 : 登录后调用此接口, 传入歌曲 id 用户id和喜欢状态, 可喜欢/取消喜欢歌曲
+
+**必选参数 :**
+
+`id`: 歌曲 id
+`uid`: 用户 id
+`like`: 喜欢状态, true 表示喜欢, false 表示取消喜欢
+
+**接口地址 :** `/song/like`
+
+**调用例子 :** `/song/like?id=2058263032&uid=32953014&like=true`
+
+### 我创建的播客声音
+
+说明 : 登录后调用此接口, 获取我创建的博客声音
+
+**可选参数 :** 
+
+`limit` : 返回数量 , 默认为 20
+
+**接口地址 :** `/voicelist/my/created`
+
+**调用例子 :** `/voicelist/my/created`
+
+### 发布评论
+
+说明 : 登录后调用此接口, 传入评论线程 id, 评论内容等信息, 发布评论
+
+**必选参数 :**
+
+`id`: 歌曲id
+`content`: 评论内容
+
+**接口地址 :** `/comment/add`
+
+**调用例子 :** `/comment/add?id=2058263032&content=这首歌太棒了！`
+
+### 删除评论
+
+说明 : 登录后调用此接口, 传入评论 id, 删除评论
+
+**必选参数 :**
+`cid`: 评论 id
+`id`: 歌曲id
+
+**接口地址 :** `/comment/delete`
+
+**调用例子 :** `/comment/delete?threadId=2058263032&commentId=123456789`
+
+### 回复评论
+
+说明 : 登录后调用此接口, 传入歌曲 id, 回复内容等信息, 回复评论
+
+**必选参数 :**
+`id`: 歌曲id
+`commentId`: 被回复的评论 id
+`content`: 回复内容
+
+**接口地址 :** `/comment/reply`
+
+**调用例子 :** `/comment/reply?id=2058263032&commentId=123456789&content=我也觉得这首歌很棒！`
 
 ## 离线访问此文档
 

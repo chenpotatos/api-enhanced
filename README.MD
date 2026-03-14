@@ -210,6 +210,7 @@ pnpm test
 ## 贡献与社区
 
 - 欢迎提交 PR、Issue 参与维护
+- 要贡献新接口, 请参考[这篇文章](https://www.focalors.ltd/post/how-to-contribute-ncm-api)
 
 ### 致谢
 

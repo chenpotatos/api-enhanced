@@ -96,6 +96,10 @@
       transition: background 0.2s ease;
     }
 
+    button + button {
+      margin-left: 12px;
+    }
+
     button:hover {
       background: #555;
     }
@@ -166,6 +170,7 @@
     </div>
 
     <button @click="decrypt">解密</button>
+    <button @click="sendToApi" :disabled="!canSend" :class="[{ 'opacity-50 cursor-not-allowed pointer-events-none': !canSend },]">填入 API 调试</button>
 
     <div class="result-section">
       <label>解密结果：</label>
@@ -194,12 +199,29 @@
       mounted() {
         this.decrypt()
       },
-      methods: {
-        formatResult(result) {
+      computed: {
+        isRequestMode() {
+          return this.isReq === true || this.isReq === 'true'
+        },
+        canSend() {
+          if (!this.isRequestMode) return false
+          if (!this.result || this.result === '{}' || this.result === 'null') return false
           try {
-            return JSON.stringify(JSON.parse(result), null, 2)
-          } catch (e) {
-            return result
+            JSON.parse(this.result)
+            return true
+          } catch (error) {
+            return false
+          }
+        },
+      },
+      methods: {
+        formatResult(value) {
+          if (value == null || value === '') return ''
+          try {
+            const parsed = typeof value === 'string' ? JSON.parse(value) : value
+            return JSON.stringify(parsed, null, 2)
+          } catch (error) {
+            return String(value)
           }
         },
         async decrypt() {
@@ -215,9 +237,25 @@
             console.log(res.data);
           } catch (error) {
             console.error(error)
-            alert(error?.response?.data?.message || '解密失败，数据格式错误')
+            alert(error?.response?.data?.message || '解密失败,数据格式错误')
           }
-        }
+        },
+        sendToApi() {
+          if (!this.canSend) return
+          const payload = JSON.parse(this.result)
+          const params = new URLSearchParams()
+          params.set('uri', payload.uri || payload.url || payload.path || '')
+          params.set('crypto', 'eapi')
+          const data =
+            payload.params ||
+            payload.data ||
+            payload.body ||
+            payload.payload ||
+            payload.request ||
+            {}
+          params.set('data', JSON.stringify(data))
+          window.open(`/api.html?${params.toString()}`, '_blank')
+        },
       }
     })
     app.mount('#app')

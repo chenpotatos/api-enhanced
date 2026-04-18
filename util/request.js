@@ -3,7 +3,6 @@ const encrypt = require('./crypto')
 const CryptoJS = require('crypto-js')
 const { default: axios } = require('axios')
 const { PacProxyAgent } = require('pac-proxy-agent')
-const logger = require('./logger')
 const http = require('http')
 const https = require('https')
 const tunnel = require('tunnel')
@@ -160,10 +159,8 @@ const createRequest = (uri, data, options) => {
   return new Promise((resolve, reject) => {
     // 变量声明和初始化
     const headers = options.headers ? { ...options.headers } : {}
-    const ip =
-      options.realIP ||
-      options.ip ||
-      (options.randomCNIP ? generateRandomChineseIP() : '')
+    const ip = options.realIP || options.ip || ''
+
     // IP头设置
     if (ip) {
       headers['X-Real-IP'] = ip
@@ -191,6 +188,13 @@ const createRequest = (uri, data, options) => {
 
     const answer = { status: 500, body: {}, cookie: [] }
 
+    data.e_r = toBoolean(
+      options.e_r !== undefined
+        ? options.e_r
+        : data.e_r !== undefined
+          ? data.e_r
+          : ENCRYPT_RESPONSE,
+    )
     // 根据加密方式处理
     switch (crypto) {
       case 'weapi':
@@ -242,13 +246,7 @@ const createRequest = (uri, data, options) => {
         if (crypto === 'eapi') {
           // headers['x-aeapi'] = true // 服务器会使用gzip压缩返回值
           data.header = header
-          data.e_r = toBoolean(
-            options.e_r !== undefined
-              ? options.e_r
-              : data.e_r !== undefined
-                ? data.e_r
-                : ENCRYPT_RESPONSE,
-          )
+
           encryptData = encrypt.eapi(uri, data)
           url = (options.domain || API_DOMAIN) + '/eapi/' + uri.substr(5)
         } else if (crypto === 'api') {
@@ -258,10 +256,10 @@ const createRequest = (uri, data, options) => {
         break
 
       default:
-        logger.error('Unknown Crypto:', crypto)
+        console.log('[ERR]', 'Unknown Crypto:', crypto)
         break
     }
-    // logger.info(url);
+    // console.log(url);
     // settings创建
     let settings = {
       method: 'POST',
@@ -272,8 +270,9 @@ const createRequest = (uri, data, options) => {
       httpsAgent: createHttpsAgent(),
     }
 
-    // e_r处理
-    if (data.e_r) {
+    // 使用返回值加密
+    const use_e_r = (crypto === 'eapi' || crypto === 'weapi') && data.e_r
+    if (use_e_r) {
       settings.encoding = null
       settings.responseType = 'arraybuffer'
     }
@@ -303,16 +302,16 @@ const createRequest = (uri, data, options) => {
             settings.httpAgent = agent
             settings.proxy = false
           } else {
-            logger.error('代理配置无效,不使用代理')
+            console.error('代理配置无效,不使用代理')
           }
         } catch (e) {
-          logger.error('代理URL解析失败:', e.message)
+          console.error('代理URL解析失败:', e.message)
         }
       }
     } else {
       settings.proxy = false
     }
-    // logger.info(settings.headers);
+    // console.log(settings.headers);
     axios(settings)
       .then((res) => {
         const body = res.data
@@ -321,7 +320,7 @@ const createRequest = (uri, data, options) => {
         )
 
         try {
-          if (crypto === 'eapi' && data.e_r) {
+          if (use_e_r) {
             answer.body = encrypt.eapiResDecrypt(
               body.toString('hex').toUpperCase(),
               headers['x-aeapi'],
@@ -352,14 +351,14 @@ const createRequest = (uri, data, options) => {
         if (answer.status === 200) {
           resolve(answer)
         } else {
-          logger.error(answer)
+          console.log('[ERR]', answer)
           reject(answer)
         }
       })
       .catch((err) => {
         answer.status = 502
         answer.body = { code: 502, msg: err.message || err }
-        logger.error(answer)
+        console.log('[ERR]', answer)
         reject(answer)
       })
   })

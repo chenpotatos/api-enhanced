@@ -156,6 +156,29 @@ function getCorsAllowOrigin(allowOrigins, requestOrigin) {
   return null
 }
 
+function createConsoleSpinner(message = '启动中') {
+  if (!process.stdout.isTTY) {
+    return {
+      stop() {},
+    }
+  }
+
+  const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+  let index = 0
+  process.stdout.write(`${frames[index]} ${message}...`)
+  const timer = setInterval(() => {
+    index = (index + 1) % frames.length
+    process.stdout.write(`\r${frames[index]} ${message}...`)
+  }, 80)
+
+  return {
+    stop() {
+      clearInterval(timer)
+      process.stdout.write(`\r✔ ${message} 完成。\n`)
+    },
+  }
+}
+
 /**
  * Construct the server of NCM API.
  *
@@ -387,6 +410,8 @@ async function serveNcmApi(options) {
   const port = Number(options.port || process.env.PORT || '3000')
   const host = options.host || process.env.HOST || ''
 
+  const spinner = createConsoleSpinner('服务启动中')
+
   const checkVersionSubmission =
     options.checkVersion &&
     checkVersion().then(({ npmVersion, ourVersion, status }) => {
@@ -403,21 +428,15 @@ async function serveNcmApi(options) {
     constructServerSubmission,
   ])
 
+  spinner.stop()
+
   /** @type {import('express').Express & ExpressExtension} */
   const appExt = app
   appExt.server = app.listen(port, host, () => {
     console.log(`
-   _   _  _____ __  __  
-  | \\ | |/ ____|  \\/  |
-  |  \\| | |    | \\  / |
-  | . \` | |    | |\\/| |
-  | |\\  | |____| |  | | 
-  |_| \\_|\\_____|_|  |_|
-    `)
-    console.log(`
-    ╔═╗╔═╗╦    ╔═╗╔╗╔╦ ╦╔═╗╔╗╔╔═╗╔═╗╔╦╗
-    ╠═╣╠═╝║    ║╣ ║║║╠═╣╠═╣║║║║  ║╣  ║║
-    ╩ ╩╩  ╩    ╚═╝╝╚╝╩ ╩╩ ╩╝╚╝╚═╝╚═╝═╩╝
+  ╔═╗╔═╗╦    ╔═╗╔╗╔╦ ╦╔═╗╔╗╔╔═╗╔═╗╔╦╗
+  ╠═╣╠═╝║    ║╣ ║║║╠═╣╠═╣║║║║  ║╣  ║║
+  ╩ ╩╩  ╩    ╚═╝╝╚╝╩ ╩╩ ╩╝╚╝╚═╝╚═╝═╩╝
     `)
     logger.info(`
 - Server started successfully @ http://${host ? host : 'localhost'}:${port}

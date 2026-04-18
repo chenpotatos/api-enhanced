@@ -209,6 +209,12 @@ $ sudo docker build . -t netease-music-api
 $ sudo docker run -d -p 3000:3000 netease-music-api
 ```
 
+## 调试工具
+
+- `eapi` 请求参数或返回内容可在 `/eapi_decrypt.html` 里解析
+- 请求参数模式下, 解密结果可直接带到 `/api.html` 继续调试
+- 需要返回值加密时, 可传 `e_r=1`, `weapi` 和 `eapi` 都支持
+
 ## 接口文档
 
 ### 调用前须知
@@ -5031,6 +5037,21 @@ let data = encodeURIComponent(
 
 **调用例子:** `/vip/sign/info`
 
+### 广播电台 - 收藏/取消收藏电台
+
+说明: 登录后调用此接口, 传入电台 id, 可收藏或取消收藏广播电台
+
+**必选参数：**
+
+`id`: 电台 id
+
+`t`: 操作类型, `1` 为收藏, 其余值为取消收藏
+
+**接口地址:** `/broadcast/sub`
+
+**调用例子:** `/broadcast/sub?id=5&t=1`
+
+
 ### 用户的创建歌单列表
 
 说明 : 调用此接口, 传入用户id, 获取用户的创建歌单列表
@@ -5208,6 +5229,92 @@ let data = encodeURIComponent(
 **接口地址:** `/dj/difm/playing/tracks/list`
 
 **调用例子:** `/dj/difm/playing/tracks/list?source=0&channelId=1012`
+
+### 助眠解压 - 特定时间场景下的推荐资源
+
+说明: 调用此接口, 获取特定时间场景下的推荐资源
+
+**接口地址:** `/sati/timescene/resources/get`
+
+**调用例子:** `/sati/timescene/resources/get`
+
+### 助眠解压 - 标签列表
+
+说明: 调用此接口, 获取标签列表
+
+**接口地址:** `/sati/tag/list`
+
+**调用例子:** `/sati/tag/list`
+
+### 助眠解压 - 获取标签下资源列表
+
+说明: 调用此接口, 获取标签下资源列表; 接口返回的`trackId`可以用于请求`/song/url/v1`接口，用于获取声音的下载地址
+
+**必选参数 :**  
+
+`tag`: 标签, 由标签列表接口得到
+
+**接口地址:** `/sati/resource/list`
+
+**调用例子:** `/sati/resource/list?tag=naturalMusic`
+
+### 助眠解压 - 查看同类推荐
+
+说明: 调用此接口, 查看同类推荐
+
+**必选参数 :**  
+
+`id`: id, `/sati/tag/list`接口返回的`trackId`
+
+**接口地址:** `/sati/resource/list/more`
+
+**调用例子:** `/sati/resource/list/more?id=167003`
+
+### 助眠解压 - 收藏列表
+
+说明: 调用此接口, 获取收藏列表
+
+**接口地址:** `/sati/resource/sub/list`
+
+**调用例子:** `/sati/resource/sub/list`
+
+### 助眠解压 - 收藏
+
+说明: 调用此接口, 收藏声音
+
+**必选参数 :**  
+
+`id`: id, `/sati/tag/list`接口返回的`trackId`
+
+**可选参数 :**
+
+`cancel`: 是否取消收藏, 默认不取消
+
+**接口地址:** `/sati/resource/sub`
+
+**调用例子:** `/sati/resource/sub?id=167003`
+
+### 跑步漫游
+
+说明: 调用此接口，获取跑步漫游的歌曲信息
+
+**必选参数：**     
+
+`bpm`: 步频
+
+**接口地址:** `/radio/sport/get`
+
+**调用例子:** `/radio/sport/get?bpm=50`
+
+### 歌曲创作者信息
+
+说明 : 调用此接口, 传入音乐 id 可获得对应音乐的创作者信息
+
+**必选参数 :** `id`: 音乐 id
+
+**接口地址 :** `/song/creators`
+
+**调用例子 :** `/song/creators?id=33894312`
 
 ## 离线访问此文档
 
